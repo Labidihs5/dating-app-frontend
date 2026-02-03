@@ -54,12 +54,15 @@ export default function ProfilePage() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [location, setLocation] = useState({
+  const [location, setLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    address?: string;
+    city?: string;
+    country?: string;
+  }>({
     latitude: 0,
     longitude: 0,
-    address: '',
-    city: '',
-    country: '',
   });
 
   const relationshipOptions = [
