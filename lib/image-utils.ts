@@ -5,5 +5,5 @@ export const getImageUrl = (photoPath: string | undefined): string => {
     return photoPath;
   }
   
-  return `http://localhost:3001${photoPath}`;
+  return `  ${photoPath}`;
 };
