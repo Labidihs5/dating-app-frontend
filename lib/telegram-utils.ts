@@ -28,12 +28,7 @@ export function getTelegramUser(): TelegramUser | null {
     };
   }
   
-  // DEV: Return test user if no Telegram
-  return {
-    id: '1',
-    first_name: 'Test User',
-    username: 'testuser'
-  };
+  return null;
 }
 
 export function saveUserName(name: string) {
