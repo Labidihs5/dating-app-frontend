@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String   @id // Telegram User ID
+  telegramUsername String?  // @username from Telegram
+  name             String   // Display name (from Telegram, editable)
+  age              Int      // Editable
+  gender           String   // Editable
+  bio              String?  // Optional
+  photos           String[]
+  profilePhotoIndex Int     @default(0) // Index of main profile photo
+  isOnline         Boolean  @default(false)
+  lastSeen         DateTime @default(now())
+  location         Json?
+  preferences      Json?
+  relationshipType String   @default("serious")
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  sentLikes     Like[] @relation("LikeSender")
+  receivedLikes Like[] @relation("LikeReceiver")
+  matches1      Match[] @relation("Match1")
+  matches2      Match[] @relation("Match2")
+  sentMessages  Message[] @relation("MessageSender")
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Like {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  isSuper    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("LikeSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("LikeReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@map("likes")
+}
+
+model Match {
+  id        String   @id @default(cuid())
+  user1Id   String
+  user2Id   String
+  createdAt DateTime @default(now())
+
+  user1    User      @relation("Match1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2    User      @relation("Match2", fields: [user2Id], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@unique([user1Id, user2Id])
+  @@map("matches")
+}
+
+model Message {
+  id           String    @id @default(cuid())
+  matchId      String
+  senderId     String
+  content      String
+  isRead       Boolean   @default(false)
+  isDelivered  Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  deliveredAt  DateTime?
+  readAt       DateTime?
+
+  match  Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  sender User  @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String   // "match", "message", "like"
+  title      String
+  message    String
+  data       Json?    // Additional data (matchId, senderId, etc.)
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  readAt     DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
