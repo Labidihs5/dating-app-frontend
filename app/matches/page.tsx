@@ -32,7 +32,7 @@ interface Match {
   createdAt: string;
 }
 
-const BACKEND_URL = typeof window !== 'undefined' ? window.location.origin.replace('3000', '3001') : 'http://localhost:3001';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
 
 export default function MatchesPage() {
   const router = useRouter();

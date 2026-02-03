@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const backendUrl = `http://localhost:3001${path}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001'}${path}`;
     const response = await fetch(backendUrl);
 
     if (!response.ok) {

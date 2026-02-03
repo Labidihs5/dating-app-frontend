@@ -3,7 +3,7 @@
  * Replace these with actual API calls to your Node.js/Prisma backend
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 // User Profile Services
 export const userAPI = {

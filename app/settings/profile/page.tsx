@@ -14,7 +14,7 @@ import { userAPI } from '@/lib/api-services';
 import { getTelegramUser } from '@/lib/telegram-utils';
 import { getImageUrl } from '@/lib/image-utils';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export default function EditProfilePage() {
   const router = useRouter();

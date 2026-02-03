@@ -1,7 +1,7 @@
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const path = url.pathname.replace('/api', '');
-  const backendUrl = `http://localhost:3001/api${path}${url.search}`;
+  const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}${path}${url.search}`;
   
   const response = await fetch(backendUrl);
   const data = await response.json();
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const contentType = request.headers.get('content-type');
   if (contentType?.includes('multipart/form-data') || contentType === null) {
     const formData = await request.formData();
-    const response = await fetch(`http://localhost:3001/api${path}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}${path}`, {
       method: 'POST',
       body: formData,
     });
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   
   // Handle JSON
   const body = await request.json();
-  const response = await fetch(`http://localhost:3001/api${path}`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -51,7 +51,7 @@ export async function PUT(request: Request) {
     // No body or invalid JSON
   }
   
-  const response = await fetch(`http://localhost:3001/api${path}`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}${path}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -71,7 +71,7 @@ export async function DELETE(request: Request) {
   const url = new URL(request.url);
   const path = url.pathname.replace('/api', '');
   
-  const response = await fetch(`http://localhost:3001/api${path}`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}${path}`, {
     method: 'DELETE',
   });
   

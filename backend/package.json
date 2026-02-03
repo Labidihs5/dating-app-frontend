@@ -7,9 +7,12 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "migrate": "npx prisma migrate dev",
+    "migrate:deploy": "npx prisma migrate deploy",
     "generate": "npx prisma generate",
     "studio": "npx prisma studio",
-    "setup-db": "node setup-db.js"
+    "setup-db": "node setup-db.js",
+    "build": "echo 'No build needed'",
+    "postinstall": "echo 'Skipping prisma generate'"
   },
   "dependencies": {
     "express": "^4.18.2",
