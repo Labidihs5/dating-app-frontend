@@ -35,11 +35,11 @@ export default function ProfilePage() {
       const tg = (window as any).Telegram.WebApp;
       tg.ready();
       const user = tg.initDataUnsafe?.user;
-          tg.showAlert(user);
+          //tg.showAlert(user);
     
       if (user) {
         console.log('Telegram User:', user);
-        tg.showAlert(`ID: ${user.id}\nNom: ${user.first_name}\nUsername: @${user.username ?? '—'}`);
+        console.log(`ID: ${user.id}\nNom: ${user.first_name}\nUsername: @${user.username ?? '—'}`);
       }
     }
   }, []);
@@ -176,13 +176,35 @@ export default function ProfilePage() {
     setCurrentStep(currentStep + 1);
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const urls = Array.from(files).map(file => URL.createObjectURL(file));
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const formData = new FormData();
+        formData.append('photos', file);
+        
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/uploads`, {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            return result.path; // Returns /uploads/filename.jpg
+          }
+        } catch (error) {
+          console.error('Upload failed:', error);
+        }
+        return null;
+      });
+      
+      const uploadedPaths = await Promise.all(uploadPromises);
+      const validPaths = uploadedPaths.filter(path => path !== null);
+      
       setFormData(prev => ({
         ...prev,
-        photos: [...prev.photos, ...urls].slice(0, 5),
+        photos: [...prev.photos, ...validPaths].slice(0, 5),
       }));
     }
   };
@@ -200,11 +222,15 @@ export default function ProfilePage() {
       return;
     }
 
+    // Get Telegram user ID
+    const telegramUser = getTelegramUser();
+    const userId = telegramUser?.id || name;
+
     // Save name to localStorage
     saveUserName(name);
 
     try {
-      await userAPI.updateProfile(name, {
+      await userAPI.updateProfile(userId, {
         name,
         age: parseInt(age),
         gender,
@@ -212,6 +238,7 @@ export default function ProfilePage() {
         photos: formData.photos,
         preferences,
         location,
+        relationshipType: formData.relationshipType,
       });
       
       setIsSubmitted(true);
