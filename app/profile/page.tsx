@@ -176,36 +176,15 @@ export default function ProfilePage() {
     setCurrentStep(currentStep + 1);
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
-
-    const telegramUser = getTelegramUser();
-    const userId = telegramUser?.id || formData.name;
-    
-    if (!userId) {
-      alert('Please enter your name first');
-      return;
-    }
-
-    try {
-      const formDataUpload = new FormData();
-      Array.from(files).forEach(file => formDataUpload.append('photos', file));
-
-      const response = await fetch(`/api/users/${userId}/photos`, {
-        method: 'POST',
-        body: formDataUpload
-      });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const data = await response.json();
-      setFormData(prev => ({ ...prev, photos: data.photos }));
-    } catch (error) {
-      console.error('Error uploading photos:', error);
-      alert('Failed to upload photos');
+    if (files) {
+      const urls = Array.from(files).map(file => URL.createObjectURL(file));
+      setFormData(prev => ({
+        ...prev,
+        photos: [...prev.photos, ...urls].slice(0, 5),
+        photoFiles: [...(prev as any).photoFiles || [], ...Array.from(files)].slice(0, 5),
+      }));
     }
   };
 
@@ -230,16 +209,32 @@ export default function ProfilePage() {
     saveUserName(name);
 
     try {
+      // 1. Create user profile
       await userAPI.updateProfile(userId, {
         name,
         age: parseInt(age),
         gender,
         bio,
-        photos: formData.photos,
+        photos: [],
         preferences,
         location,
         relationshipType: formData.relationshipType,
       });
+      
+      // 2. Upload photos if any
+      if ((formData as any).photoFiles?.length > 0) {
+        const formDataUpload = new FormData();
+        (formData as any).photoFiles.forEach((file: File) => formDataUpload.append('photos', file));
+
+        const response = await fetch(`/api/users/${userId}/photos`, {
+          method: 'POST',
+          body: formDataUpload
+        });
+
+        if (!response.ok) {
+          throw new Error('Photo upload failed');
+        }
+      }
       
       setIsSubmitted(true);
     } catch (error) {

@@ -136,7 +136,7 @@ export default function LikesPage() {
                     >
                       <div className="relative aspect-square overflow-hidden">
                         <img
-                          src={liker.photos?.[0] || "/placeholder.svg"}
+                          src={liker.photos?.[0] ? `/api/photos?path=${encodeURIComponent(liker.photos[0])}` : "/placeholder.svg"}
                           alt={liker.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
