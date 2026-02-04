@@ -178,34 +178,34 @@ export default function ProfilePage() {
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      const uploadPromises = Array.from(files).map(async (file) => {
-        const formData = new FormData();
-        formData.append('photos', file);
-        
-        try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/uploads`, {
-            method: 'POST',
-            body: formData,
-          });
-          
-          if (response.ok) {
-            const result = await response.json();
-            return result.path; // Returns /uploads/filename.jpg
-          }
-        } catch (error) {
-          console.error('Upload failed:', error);
-        }
-        return null;
+    if (!files) return;
+
+    const telegramUser = getTelegramUser();
+    const userId = telegramUser?.id || formData.name;
+    
+    if (!userId) {
+      alert('Please enter your name first');
+      return;
+    }
+
+    try {
+      const formDataUpload = new FormData();
+      Array.from(files).forEach(file => formDataUpload.append('photos', file));
+
+      const response = await fetch(`/api/users/${userId}/photos`, {
+        method: 'POST',
+        body: formDataUpload
       });
-      
-      const uploadedPaths = await Promise.all(uploadPromises);
-      const validPaths = uploadedPaths.filter(path => path !== null);
-      
-      setFormData(prev => ({
-        ...prev,
-        photos: [...prev.photos, ...validPaths].slice(0, 5),
-      }));
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      setFormData(prev => ({ ...prev, photos: data.photos }));
+    } catch (error) {
+      console.error('Error uploading photos:', error);
+      alert('Failed to upload photos');
     }
   };
 
