@@ -2,6 +2,7 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const router = express.Router();
 const prisma = new PrismaClient();
+const { sendNotificationEmail } = require('../services/notificationService');
 
 // GET /api/messages/:matchId - Get conversation
 router.get('/:matchId', async (req, res) => {
@@ -63,18 +64,21 @@ router.post('/:matchId/send', async (req, res) => {
     
     if (match) {
       const recipientId = match.user1Id === senderId ? match.user2Id : match.user1Id;
-      const sender = match.user1Id === senderId ? match.user1 : match.user2;
       
-      // Create notification for recipient
-      await prisma.notification.create({
-        data: {
-          userId: recipientId,
-          type: 'message',
-          title: `💬 ${sender.name}`,
-          message: content.length > 50 ? content.substring(0, 50) + '...' : content,
-          data: { matchId: req.params.matchId, messageId: message.id, senderId }
-        }
+      console.log('🔔 Triggering message notification:', {
+        recipientId,
+        senderId,
+        matchId: match.id
       });
+      await sendNotificationEmail(recipientId, 'message', {
+        senderId,
+        matchId: match.id,
+        messagePreview: content?.slice(0, 120)
+      });
+
+      console.log('Message sent successfully');
+    } else {
+      console.log('🔔 No match found, skipping notification');
     }
     
     res.status(201).json(message);

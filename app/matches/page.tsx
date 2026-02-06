@@ -12,6 +12,7 @@ import { matchesAPI } from '@/lib/api-services';
 import { getTelegramUser } from '@/lib/telegram-utils';
 import { OnlineIndicator } from '@/components/status/OnlineIndicator';
 import confetti from 'canvas-confetti';
+import { useI18n } from '@/components/i18n/LanguageProvider';
 
 interface Match {
   id: string;
@@ -36,16 +37,22 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
 
 export default function MatchesPage() {
   const router = useRouter();
+  const { t, language } = useI18n();
+  const formatNumber = (value: number) => value.toLocaleString(language);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [unmatchConfirm, setUnmatchConfirm] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const user = getTelegramUser();
-    if (user) {
-      setUserId(user.id.toString());
+    setMounted(true);
+    if (typeof window !== 'undefined') {
+      const user = getTelegramUser();
+      if (user) {
+        setUserId(user.id.toString());
+      }
     }
   }, []);
 
@@ -120,6 +127,23 @@ export default function MatchesPage() {
     return now - matchTime < 86400000; // 24 hours
   };
 
+  if (!mounted) {
+    return (
+      <>
+        <Navbar />
+        <PageContainer>
+          <div className="min-h-screen py-8">
+            <div className="max-w-6xl mx-auto px-4">
+              <Card className="p-12 text-center">
+                <p className="text-muted-foreground">{t('matches.loading')}</p>
+              </Card>
+            </div>
+          </div>
+        </PageContainer>
+      </>
+    );
+  }
+
   return (
     <>
       <Navbar />
@@ -132,8 +156,8 @@ export default function MatchesPage() {
                 <div className="flex items-center gap-3">
                   <Users className="w-8 h-8 text-accent fill-accent" />
                   <div>
-                    <h1 className="text-3xl font-bold">Your Matches</h1>
-                    <p className="text-muted-foreground">{matches.length} connections</p>
+                    <h1 className="text-3xl font-bold">{t('matches.title')}</h1>
+                    <p className="text-muted-foreground">{t('matches.connections', { count: formatNumber(matches.length) })}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -158,7 +182,7 @@ export default function MatchesPage() {
             {/* Matches Grid */}
             {loading ? (
               <Card className="p-12 text-center">
-                <p className="text-muted-foreground">Loading matches...</p>
+                <p className="text-muted-foreground">{t('matches.loading')}</p>
               </Card>
             ) : matches.length > 0 ? (
               <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
@@ -174,14 +198,14 @@ export default function MatchesPage() {
                     >
                       {isNewMatch(match.createdAt) && (
                         <Badge className="absolute top-2 left-2 z-10 bg-accent text-white animate-pulse">
-                          ✨ New Match!
+                          {t('matches.newMatch')}
                         </Badge>
                       )}
                       
                       {/* Image Section */}
                       <div className="relative aspect-video overflow-hidden bg-muted">
                         <img
-                          src={matchedUser.photos?.[matchedUser.profilePhotoIndex || 0] ? `/api/photos?path=${encodeURIComponent(matchedUser.photos[matchedUser.profilePhotoIndex || 0])}` : "/placeholder.svg"}
+                          src={matchedUser.photos && Array.isArray(matchedUser.photos) && matchedUser.photos[matchedUser.profilePhotoIndex || 0] ? `/api/photos?path=${encodeURIComponent(matchedUser.photos[matchedUser.profilePhotoIndex || 0])}` : "/placeholder.svg"}
                           alt={matchedUser.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
@@ -191,7 +215,7 @@ export default function MatchesPage() {
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                           {unmatchConfirm === match.id ? (
                             <div className="flex flex-col gap-2">
-                              <p className="text-white text-sm font-bold">Confirm unmatch?</p>
+                              <p className="text-white text-sm font-bold">{t('matches.confirmUnmatch')}</p>
                               <div className="flex gap-2">
                                 <Button
                                   size="sm"
@@ -199,7 +223,7 @@ export default function MatchesPage() {
                                   onClick={(e) => { e.stopPropagation(); handleUnmatch(match.id); }}
                                   className="bg-destructive/90 text-white hover:bg-destructive border-0"
                                 >
-                                  Yes
+                                  {t('common.yes')}
                                 </Button>
                                 <Button
                                   size="sm"
@@ -207,7 +231,7 @@ export default function MatchesPage() {
                                   onClick={(e) => { e.stopPropagation(); setUnmatchConfirm(null); }}
                                   className="bg-white/90 text-black hover:bg-white border-0"
                                 >
-                                  No
+                                  {t('common.no')}
                                 </Button>
                               </div>
                             </div>
@@ -219,7 +243,7 @@ export default function MatchesPage() {
                               className="bg-destructive/90 text-destructive-foreground hover:bg-destructive border-0"
                             >
                               <Trash2 className="w-4 h-4 mr-1" />
-                              Unmatch
+                              {t('matches.unmatch')}
                             </Button>
                           )}
                         </div>
@@ -233,7 +257,7 @@ export default function MatchesPage() {
                             <OnlineIndicator isOnline={matchedUser.isOnline || false} lastSeen={matchedUser.lastSeen} size="sm" />
                           </div>
                           <span className="text-xs text-muted-foreground">
-                            {new Date(match.createdAt).toLocaleDateString()}
+                            {new Date(match.createdAt).toLocaleDateString(language)}
                           </span>
                         </div>
 
@@ -243,7 +267,7 @@ export default function MatchesPage() {
                               {lastMessage.content}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {new Date(lastMessage.timestamp).toLocaleString()}
+                              {new Date(lastMessage.timestamp).toLocaleString(language)}
                             </p>
                           </div>
                         )}
@@ -252,7 +276,7 @@ export default function MatchesPage() {
                           onClick={() => handleOpenChat(match.id, matchedUser.name)}
                           className="w-full bg-primary hover:bg-primary/90 hover:scale-105 transition-transform"
                         >
-                          Message
+                          {t('matches.message')}
                         </Button>
                       </div>
                     </Card>
@@ -262,15 +286,15 @@ export default function MatchesPage() {
             ) : (
               <Card className="p-12 text-center">
                 <Sparkles className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h2 className="text-xl font-bold mb-2">No matches yet</h2>
+                <h2 className="text-xl font-bold mb-2">{t('matches.emptyTitle')}</h2>
                 <p className="text-muted-foreground mb-6">
-                  Start swiping to find your match!
+                  {t('matches.emptyBody')}
                 </p>
                 <Button
                   onClick={() => router.push('/')}
                   className="bg-primary hover:bg-primary/90"
                 >
-                  Start Swiping
+                  {t('matches.startSwiping')}
                 </Button>
               </Card>
             )}

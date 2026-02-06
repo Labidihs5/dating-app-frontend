@@ -3,6 +3,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Star, Eye, EyeOff } from 'lucide-react';
+import { useI18n } from '@/components/i18n/LanguageProvider';
 
 interface DistanceBadgeProps {
   distance: number;
@@ -19,6 +20,7 @@ export function DistanceBadge({
   hideExactLocation = false,
   isTopMatch = false,
 }: DistanceBadgeProps) {
+  const { t, language } = useI18n();
   const displayDistance = hideExactLocation && !isPremium
     ? Math.round(distance / 10) * 10
     : Math.round(distance * 10) / 10;
@@ -31,7 +33,7 @@ export function DistanceBadge({
           className="bg-accent/20 border-accent/50 text-accent"
         >
           <Star className="w-3 h-3 mr-1" />
-          Top Match
+          {t('distanceBadge.topMatch')}
         </Badge>
       )}
 
@@ -46,20 +48,20 @@ export function DistanceBadge({
         }`}
       >
         <MapPin className="w-3 h-3" />
-        {distance < 1 ? 'Your city' : `~${displayDistance}km`}
+        {distance < 1 ? t('distanceBadge.yourCity') : `~${displayDistance.toLocaleString(language)}${t('common.km')}`}
       </Badge>
 
       {hideExactLocation && !isPremium && (
         <Badge variant="outline" className="bg-muted/50">
           <EyeOff className="w-3 h-3 mr-1" />
-          Approximate
+          {t('distanceBadge.approximate')}
         </Badge>
       )}
 
       {isPremium && isExact && (
         <Badge variant="outline" className="bg-primary/10 border-primary/30">
           <Eye className="w-3 h-3 mr-1" />
-          Exact
+          {t('distanceBadge.exact')}
         </Badge>
       )}
     </div>

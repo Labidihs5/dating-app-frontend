@@ -1,141 +1,152 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { getTelegramUser } from '@/lib/telegram-utils';
+import { useI18n } from '@/components/i18n/LanguageProvider';
 
 interface Notification {
   id: string;
-  type: string;
+  type: 'match' | 'message' | 'like';
   title: string;
   message: string;
-  isRead: boolean;
-  createdAt: string;
   data?: any;
+  createdAt: string;
 }
 
-export function useNotifications(userId: string | null) {
+export function useNotifications() {
+  const { t, dir } = useI18n();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [toasts, setToasts] = useState<Notification[]>([]);
-  const lastCheckRef = useRef<Date>(new Date());
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const seenIdsRef = useRef<Set<string>>(new Set());
+  const [userId, setUserId] = useState<string | null>(null);
+  const notificationsRef = useRef<Notification[]>([]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Create beep sound using Web Audio API
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-      gainNode.gain.value = 0;
-      
-      audioRef.current = {
-        play: () => {
-          const osc = audioContext.createOscillator();
-          const gain = audioContext.createGain();
-          osc.connect(gain);
-          gain.connect(audioContext.destination);
-          osc.frequency.value = 800;
-          osc.type = 'sine';
-          gain.gain.setValueAtTime(0.3, audioContext.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-          osc.start(audioContext.currentTime);
-          osc.stop(audioContext.currentTime + 0.3);
-          return Promise.resolve();
-        }
-      } as any;
+    const user = getTelegramUser();
+    if (user) {
+      setUserId(user.id);
+      // Poll for notifications every 5 seconds
+      const interval = setInterval(() => {
+        checkNotifications(user.id);
+      }, 5000);
+      return () => clearInterval(interval);
     }
   }, []);
 
-  const playSound = () => {
-    if (audioRef.current) {
-      audioRef.current.play().catch(() => {});
-    }
-  };
-
-  const vibrate = () => {
-    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
-      navigator.vibrate([200, 100, 200]);
-    }
-  };
-
-  const fetchNotifications = useCallback(async () => {
-    if (!userId) return;
-
-    try {
-      const response = await fetch(`/api/notifications/${userId}`);
-      const data = await response.json();
-      
-      const newNotifications = data.filter((n: Notification) => 
-        new Date(n.createdAt) > lastCheckRef.current && !n.isRead && !seenIdsRef.current.has(n.id)
-      );
-
-      if (newNotifications.length > 0) {
-        playSound();
-        vibrate();
-        newNotifications.forEach((n: Notification) => seenIdsRef.current.add(n.id));
-        setToasts(prev => {
-          const existingIds = new Set(prev.map(t => t.id));
-          const uniqueNew = newNotifications.filter((n: Notification) => !existingIds.has(n.id));
-          return [...prev, ...uniqueNew];
-        });
-      }
-
-      setNotifications(data);
-      setUnreadCount(data.filter((n: Notification) => !n.isRead).length);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
-  }, [userId]);
-
   useEffect(() => {
-    if (!userId) return;
-    
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 3000);
-    return () => clearInterval(interval);
-  }, [userId, fetchNotifications]);
+    notificationsRef.current = notifications;
+  }, [notifications]);
+
+  const checkNotifications = async (currentUserId: string) => {
+    try {
+      console.log('🔔 Checking notifications for:', currentUserId);
+      const response = await fetch(`/api/notifications/${currentUserId}`);
+      const data = await response.json();
+      console.log('🔔 Notifications fetched:', data);
+      
+      // Show toast for new notifications
+      data.forEach((notification: Notification) => {
+        if (!notificationsRef.current.find(n => n.id === notification.id)) {
+          console.log('🔔 New notification toast:', notification.id);
+          showNotificationToast(notification);
+        }
+      });
+      
+      setNotifications(data);
+    } catch (error) {
+      console.error('Error checking notifications:', error);
+    }
+  };
+
+  const showNotificationToast = (notification: Notification) => {
+    let title = '';
+    let message = '';
+    let emoji = '';
+
+    switch (notification.type) {
+      case 'match':
+        emoji = '💕';
+        title = t('notifications.toast.matchTitle');
+        message = t('notifications.toast.matchBody', {
+          name: notification.data?.userName || t('notifications.toast.someone'),
+        });
+        break;
+      case 'message':
+        emoji = '💬';
+        title = t('notifications.toast.messageTitle');
+        message = t('notifications.toast.messageBody', {
+          name: notification.data?.senderName || t('notifications.toast.someone'),
+          preview: notification.data?.messagePreview || t('notifications.toast.newMessage'),
+        });
+        break;
+      case 'like':
+        emoji = '❤️';
+        title = t('notifications.toast.likeTitle');
+        message = t('notifications.toast.likeBody', {
+          name: notification.data?.likerName || t('notifications.toast.someone'),
+        });
+        break;
+    }
+
+    // Create toast element
+    const toast = document.createElement('div');
+    const sideClass = dir === 'rtl' ? 'left-4' : 'right-4';
+    const slideClass = dir === 'rtl' ? 'slide-in-from-left' : 'slide-in-from-right';
+    toast.className = `fixed top-4 ${sideClass} bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 z-50 animate-in fade-in ${slideClass} max-w-sm`;
+    toast.innerHTML = `
+      <div class="flex items-start gap-3">
+        <div class="text-2xl">${emoji}</div>
+        <div class="flex-1">
+          <h4 class="font-bold text-gray-900 dark:text-white">${title}</h4>
+          <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${message}</p>
+        </div>
+        <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" onclick="this.parentElement.parentElement.remove()">
+          ✕
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      if (toast.parentElement) {
+        toast.remove();
+      }
+    }, 5000);
+
+    // Add click to remove
+    toast.addEventListener('click', () => {
+      toast.remove();
+    });
+  };
 
   const markAsRead = async (id: string) => {
     try {
-      await fetch(`/api/notifications/${id}/read`, { method: 'PUT' });
-      setNotifications(prev => 
-        prev.map(n => n.id === id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n)
-      );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      await fetch('/api/notifications/read', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
     } catch (error) {
       console.error('Error marking notification as read:', error);
+    } finally {
+      setNotifications(prev => prev.filter(n => n.id !== id));
     }
   };
 
   const markAllAsRead = async () => {
-    if (!userId) return;
+    const ids = notificationsRef.current.map(n => n.id);
     try {
-      await fetch(`/api/notifications/user/${userId}/read-all`, { method: 'PUT' });
-      setNotifications(prev => 
-        prev.map(n => ({ ...n, isRead: true, readAt: new Date().toISOString() }))
-      );
-      setUnreadCount(0);
+      await Promise.all(ids.map(id => fetch('/api/notifications/read', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      })));
     } catch (error) {
-      console.error('Error marking all as read:', error);
+      console.error('Error marking all notifications as read:', error);
+    } finally {
+      setNotifications([]);
     }
   };
 
-  const removeToast = (id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  };
-
-  return {
-    notifications,
-    unreadCount,
-    toasts,
-    markAsRead,
-    markAllAsRead,
-    removeToast
-  };
+  return { notifications, unreadCount: notifications.length, markAsRead, markAllAsRead };
 }

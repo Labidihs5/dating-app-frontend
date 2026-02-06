@@ -53,28 +53,25 @@ router.get('/:id', async (req, res) => {
 // PUT /api/users/:id - Update user profile
 router.put('/:id', async (req, res) => {
   try {
-    const { name, age, gender, bio, photos, profilePhotoIndex, location, preferences } = req.body;
-    
     console.log('Updating user:', req.params.id, req.body);
     
-    const userData = {
-      name,
-      age: parseInt(age),
-      gender,
-      bio: bio || null,
-      photos: photos || [],
-      profilePhotoIndex: profilePhotoIndex !== undefined ? parseInt(profilePhotoIndex) : undefined,
-      location: location || null,
-      preferences: preferences || null
-    };
+    // Filter out undefined values and only update provided fields
+    const updateData = {};
     
-    const user = await prisma.user.upsert({
+    if (req.body.name !== undefined) updateData.name = req.body.name;
+    if (req.body.age !== undefined) updateData.age = parseInt(req.body.age);
+    if (req.body.gender !== undefined) updateData.gender = req.body.gender;
+    if (req.body.bio !== undefined) updateData.bio = req.body.bio;
+    if (req.body.email !== undefined) updateData.email = req.body.email;
+    if (req.body.photos !== undefined) updateData.photos = req.body.photos;
+    if (req.body.profilePhotoIndex !== undefined) updateData.profilePhotoIndex = parseInt(req.body.profilePhotoIndex);
+    if (req.body.location !== undefined) updateData.location = req.body.location;
+    if (req.body.preferences !== undefined) updateData.preferences = req.body.preferences;
+    if (req.body.relationshipType !== undefined) updateData.relationshipType = req.body.relationshipType;
+    
+    const user = await prisma.user.update({
       where: { id: req.params.id },
-      update: userData,
-      create: {
-        id: req.params.id,
-        ...userData
-      }
+      data: updateData
     });
     
     res.json(user);

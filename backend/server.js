@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 require('dotenv').config();
 
 const app = express();
@@ -9,6 +10,25 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
+app.use(
+  '/py',
+  createProxyMiddleware({
+    target: 'http://127.0.0.1:8001',
+    changeOrigin: true,
+    ws: true,
+    proxyTimeout: 120000,
+    timeout: 120000,
+    pathRewrite: (path) => path.replace(/^\/py/, ''),
+    onProxyReq: (proxyReq, req) => {
+      if (req.body && Object.keys(req.body).length) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
+    },
+  })
+);
 app.use(express.json());
 app.use('/uploads', express.static('uploads')); // Serve uploaded files
 
@@ -40,6 +60,12 @@ app.use('/api/subscription', require('./routes/subscription'));
 app.use('/api/telegram', require('./routes/telegram'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/status', require('./routes/status'));
+app.use('/api/settings', require('./routes/settings'));
+app.use('/api/ai-profiles', require('./routes/ai-profiles'));
+app.use('/api/games', require('./routes/games'));
+app.use('/api/rooms', require('./routes/rooms'));
+app.use('/api/challenges', require('./routes/challenges'));
+app.use('/api/presence', require('./routes/presence'));
 
 // Health check
 app.get('/health', (req, res) => {

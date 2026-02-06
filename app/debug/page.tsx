@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { getTelegramUser } from '@/lib/telegram-utils';
 import { userAPI } from '@/lib/api-services';
+import { useI18n } from '@/components/i18n/LanguageProvider';
 
 export default function DebugPage() {
+  const { t } = useI18n();
   const [info, setInfo] = useState<any>({});
 
   useEffect(() => {
@@ -29,7 +31,7 @@ export default function DebugPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Debug Info</h1>
+      <h1 className="text-2xl font-bold mb-4">{t('debug.title')}</h1>
       <pre className="bg-gray-100 p-4 rounded overflow-auto">
         {JSON.stringify(info, null, 2)}
       </pre>

@@ -2,6 +2,7 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const router = express.Router();
 const prisma = new PrismaClient();
+const { sendNotificationEmail } = require('../services/notificationService');
 
 // POST /api/interactions/like - Like a profile
 router.post('/like', async (req, res) => {
@@ -45,6 +46,7 @@ router.post('/like', async (req, res) => {
     console.log('[Like] Mutual like check:', mutualLike);
     
     let match = null;
+    let createdNewMatch = false;
     if (mutualLike) {
       // Check if match already exists
       const existingMatch = await prisma.match.findFirst({
@@ -64,50 +66,31 @@ router.post('/like', async (req, res) => {
             user2Id: targetProfileId
           }
         });
+        createdNewMatch = true;
         console.log('[Like] Match created:', match);
-        
-        // Create notifications for both users
-        const [user1, user2] = await Promise.all([
-          prisma.user.findUnique({ where: { id: senderId } }),
-          prisma.user.findUnique({ where: { id: targetProfileId } })
-        ]);
-        
-        await Promise.all([
-          prisma.notification.create({
-            data: {
-              userId: senderId,
-              type: 'match',
-              title: '🎉 New Match!',
-              message: `You matched with ${user2?.name}!`,
-              data: { matchId: match.id, userId: targetProfileId }
-            }
-          }),
-          prisma.notification.create({
-            data: {
-              userId: targetProfileId,
-              type: 'match',
-              title: '🎉 New Match!',
-              message: `You matched with ${user1?.name}!`,
-              data: { matchId: match.id, userId: senderId }
-            }
-          })
-        ]);
       } else {
         match = existingMatch;
         console.log('[Like] Match already exists:', match);
       }
     } else {
-      // Create like notification for receiver
-      const sender = await prisma.user.findUnique({ where: { id: senderId } });
-      await prisma.notification.create({
-        data: {
-          userId: targetProfileId,
-          type: 'like',
-          title: isSuper ? '⭐ Super Like!' : '❤️ New Like!',
-          message: `${sender?.name} ${isSuper ? 'super ' : ''}liked you!`,
-          data: { likeId: like.id, userId: senderId }
-        }
+      console.log('[Like] Created like for:', targetProfileId);
+    }
+
+    console.log('🔔 Triggering like notification:', { targetProfileId, senderId });
+    await sendNotificationEmail(targetProfileId, 'like', {
+      likerId: senderId
+    });
+
+    if (createdNewMatch && match) {
+      console.log('🔔 Triggering match notifications:', {
+        senderId,
+        targetProfileId,
+        matchId: match.id
       });
+      await Promise.all([
+        sendNotificationEmail(senderId, 'match', { matchUserId: targetProfileId }),
+        sendNotificationEmail(targetProfileId, 'match', { matchUserId: senderId })
+      ]);
     }
     
     res.json({ like, match, isMatch: !!match });
@@ -144,6 +127,10 @@ router.post('/super-like', async (req, res) => {
       }
     });
     
+    await sendNotificationEmail(targetProfileId, 'like', {
+      likerId: senderId
+    });
+
     res.json({ like, isSuper: true });
   } catch (error) {
     res.status(500).json({ error: error.message });

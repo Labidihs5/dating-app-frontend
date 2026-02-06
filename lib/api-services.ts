@@ -136,6 +136,18 @@ export const matchesAPI = {
   },
 };
 
+// Notification Services
+export const notificationAPI = {
+  sendNotification: async (userId: string, type: string, data: any) => {
+    const response = await fetch(`${API_BASE_URL}/notifications/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, type, data }),
+    });
+    return response.json();
+  },
+};
+
 // Likes Services
 export const likesAPI = {
   getLikes: async (userId: string) => {
@@ -213,6 +225,14 @@ export const authAPI = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone, code }),
+    });
+    return response.json();
+  },
+  loginWithTelegram: async (payload: { telegramId: string; firstName: string; lastName?: string; username?: string }) => {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
     return response.json();
   },

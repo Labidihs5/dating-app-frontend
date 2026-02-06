@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, Lock, Crown } from 'lucide-react';
 import { likesAPI } from '@/lib/api-services';
 import { getTelegramUser } from '@/lib/telegram-utils';
+import { useI18n } from '@/components/i18n/LanguageProvider';
 
 interface Like {
   id: string;
@@ -26,6 +27,8 @@ interface Like {
 }
 
 export default function LikesPage() {
+  const { t, language } = useI18n();
+  const formatNumber = (value: number) => value.toLocaleString(language);
   const [isPremium, setIsPremium] = useState(false);
   const [likes, setLikes] = useState<Like[]>([]);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -86,12 +89,12 @@ export default function LikesPage() {
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-2">
                 <Heart className="w-8 h-8 text-accent fill-accent" />
-                <h1 className="text-3xl font-bold">Who Liked Me</h1>
+                <h1 className="text-3xl font-bold">{t('likes.title')}</h1>
               </div>
               <p className="text-muted-foreground">
                 {isPremium
-                  ? `${likes.length} people have liked you`
-                  : 'Upgrade to see who likes you'}
+                  ? t('likes.subtitlePremium', { count: formatNumber(likes.length) })
+                  : t('likes.subtitleFree')}
               </p>
             </div>
 
@@ -100,16 +103,16 @@ export default function LikesPage() {
                 <div className="flex items-center gap-4">
                   <Lock className="w-6 h-6 text-primary" />
                   <div className="flex-1">
-                    <p className="font-semibold mb-1">Profiles are hidden</p>
+                    <p className="font-semibold mb-1">{t('likes.hiddenTitle')}</p>
                     <p className="text-sm text-muted-foreground">
-                      Upgrade to Gold to see who likes you
+                      {t('likes.hiddenBody')}
                     </p>
                   </div>
                   <Button
                     onClick={() => setIsPremium(true)}
                     className="bg-primary hover:bg-primary/90"
                   >
-                    Upgrade Now
+                    {t('common.upgradeNow')}
                   </Button>
                 </div>
               </Card>
@@ -118,7 +121,7 @@ export default function LikesPage() {
             {/* Likers Grid */}
             {loading ? (
               <Card className="p-12 text-center">
-                <p className="text-muted-foreground">Loading likes...</p>
+                <p className="text-muted-foreground">{t('likes.loading')}</p>
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -147,7 +150,7 @@ export default function LikesPage() {
                             {like.isSuper && (
                               <div className="absolute top-3 right-3">
                                 <Badge className="bg-primary text-primary-foreground">
-                                  ⭐ Super Like
+                                  {t('likes.superLike')}
                                 </Badge>
                               </div>
                             )}
@@ -180,7 +183,7 @@ export default function LikesPage() {
                                 handleLike(like.id, false);
                               }}
                             >
-                              Not Interested
+                              {t('likes.notInterested')}
                             </Button>
                             <Button
                               className="flex-1 bg-accent hover:bg-accent/90"
@@ -189,7 +192,7 @@ export default function LikesPage() {
                                 handleLike(like.id, true);
                               }}
                             >
-                              Like Back
+                              {t('likes.likeBack')}
                             </Button>
                           </div>
                         </div>
@@ -203,9 +206,9 @@ export default function LikesPage() {
             {!loading && likes.length === 0 && (
               <Card className="p-12 text-center">
                 <Heart className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h2 className="text-xl font-bold mb-2">No likes yet</h2>
+                <h2 className="text-xl font-bold mb-2">{t('likes.emptyTitle')}</h2>
                 <p className="text-muted-foreground">
-                  Keep swiping and soon people will start liking you!
+                  {t('likes.emptyBody')}
                 </p>
               </Card>
             )}
@@ -218,9 +221,9 @@ export default function LikesPage() {
                 <div className="flex justify-center mb-4">
                   <Crown className="w-12 h-12 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold text-center mb-4">Unlock Profiles</h2>
+                <h2 className="text-2xl font-bold text-center mb-4">{t('likes.unlockTitle')}</h2>
                 <p className="text-muted-foreground text-center mb-6">
-                  Upgrade to Gold to see who likes you and discover premium features.
+                  {t('likes.unlockBody')}
                 </p>
                 <div className="space-y-3">
                   <Button
@@ -230,14 +233,14 @@ export default function LikesPage() {
                       setShowUpgradeModal(false);
                     }}
                   >
-                    Upgrade to Gold
+                    {t('common.upgradeToGold')}
                   </Button>
                   <Button
                     variant="outline"
                     className="w-full bg-transparent"
                     onClick={() => setShowUpgradeModal(false)}
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </Button>
                 </div>
               </Card>

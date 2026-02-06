@@ -13,11 +13,13 @@ import { ArrowLeft, Upload, X, User, Star } from 'lucide-react';
 import { userAPI } from '@/lib/api-services';
 import { getTelegramUser } from '@/lib/telegram-utils';
 import { getImageUrl } from '@/lib/image-utils';
+import { useI18n } from '@/components/i18n/LanguageProvider';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 export default function EditProfilePage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -84,7 +86,7 @@ export default function EditProfilePage() {
       setPreviewUrls(data.photos);
     } catch (error) {
       console.error('Error uploading photos:', error);
-      alert('Failed to upload photos');
+      alert(t('settingsProfile.failed'));
     } finally {
       setUploading(false);
     }
@@ -109,7 +111,7 @@ export default function EditProfilePage() {
       setPreviewUrls(updatedPreviews);
     } catch (error) {
       console.error('Error removing photo:', error);
-      alert('Failed to remove photo');
+      alert(t('settingsProfile.failed'));
     }
   };
 
@@ -133,7 +135,7 @@ export default function EditProfilePage() {
         <Navbar />
         <PageContainer>
           <div className="min-h-screen flex items-center justify-center">
-            <p className="text-muted-foreground">Loading profile...</p>
+            <p className="text-muted-foreground">{t('common.loading')}</p>
           </div>
         </PageContainer>
       </>
@@ -155,15 +157,15 @@ export default function EditProfilePage() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-3xl font-bold">Edit Profile</h1>
-                <p className="text-muted-foreground">Update your profile information</p>
+                <h1 className="text-3xl font-bold">{t('settingsProfile.title')}</h1>
+                <p className="text-muted-foreground">{t('settingsProfile.subtitle')}</p>
               </div>
             </div>
 
             <Card className="p-6 mb-6">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Upload className="w-5 h-5" />
-                Photos ({profile.photos.length}/5)
+                {t('profile.step2Title')} ({profile.photos.length}/5)
               </h2>
 
               <div className="grid grid-cols-3 gap-4 mb-4">
@@ -190,7 +192,7 @@ export default function EditProfilePage() {
                         onClick={() => setProfile(prev => ({ ...prev, profilePhotoIndex: idx }))}
                         className="absolute bottom-2 left-2 right-2 bg-black/70 text-white text-xs py-1 rounded hover:bg-black/90"
                       >
-                        Set as main
+                        {t('settingsProfile.setAsMain')}
                       </button>
                     )}
                   </div>
@@ -199,7 +201,7 @@ export default function EditProfilePage() {
                 {profile.photos.length < 5 && (
                   <label className="aspect-square rounded-lg border-2 border-dashed border-muted-foreground/25 hover:border-primary cursor-pointer flex flex-col items-center justify-center gap-2 transition-colors">
                     <Upload className="w-8 h-8 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Add Photo</span>
+                    <span className="text-sm text-muted-foreground">{t('profile.addPhoto')}</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -214,19 +216,19 @@ export default function EditProfilePage() {
               </div>
 
               {uploading && (
-                <p className="text-sm text-muted-foreground">Uploading...</p>
+                <p className="text-sm text-muted-foreground">{t('common.uploading')}</p>
               )}
             </Card>
 
             <Card className="p-6 mb-6">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <User className="w-5 h-5" />
-                Basic Information
+                {t('profile.basicInfo')}
               </h2>
 
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">{t('profile.name')}</Label>
                   <Input
                     id="name"
                     value={profile.name}
@@ -235,7 +237,7 @@ export default function EditProfilePage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="age">Age</Label>
+                  <Label htmlFor="age">{t('profile.age')}</Label>
                   <Input
                     id="age"
                     type="number"
@@ -245,27 +247,27 @@ export default function EditProfilePage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="gender">Gender</Label>
+                  <Label htmlFor="gender">{t('profile.gender')}</Label>
                   <select
                     id="gender"
                     value={profile.gender}
                     onChange={e => setProfile(prev => ({ ...prev, gender: e.target.value }))}
                     className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   >
-                    <option value="">Select gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
+                    <option value="">{t('profile.select')}</option>
+                    <option value="male">{t('profile.male')}</option>
+                    <option value="female">{t('profile.female')}</option>
+                    <option value="other">{t('profile.other')}</option>
                   </select>
                 </div>
 
                 <div>
-                  <Label htmlFor="bio">Bio</Label>
+                  <Label htmlFor="bio">{t('profile.bio')}</Label>
                   <Textarea
                     id="bio"
                     value={profile.bio}
                     onChange={e => setProfile(prev => ({ ...prev, bio: e.target.value }))}
-                    placeholder="Tell us about yourself..."
+                    placeholder={t('profile.bioPlaceholder')}
                     rows={4}
                   />
                 </div>
@@ -277,7 +279,7 @@ export default function EditProfilePage() {
               disabled={saving}
               className="w-full bg-primary hover:bg-primary/90 py-6 text-base"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? t('common.saving') : t('settingsProfile.saveChanges')}
             </Button>
           </div>
         </div>

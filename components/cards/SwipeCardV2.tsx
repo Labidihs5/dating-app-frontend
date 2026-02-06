@@ -6,6 +6,7 @@ import { DistanceBadge } from '@/components/location/DistanceBadge';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import { Button } from '@/components/ui/button';
 import { Heart, X, Zap } from 'lucide-react';
+import { useI18n } from '@/components/i18n/LanguageProvider';
 
 interface Profile {
   id: string;
@@ -34,6 +35,7 @@ export function SwipeCardV2({
   onSuperLike,
   isLoading = false,
 }: SwipeCardV2Props) {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { state, handlers } = useSwipeGesture({
@@ -68,7 +70,7 @@ export function SwipeCardV2({
             <div className="absolute top-8 right-8 z-50 animate-pulse">
               <div className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-full">
                 <Heart className="w-5 h-5 fill-current" />
-                <span className="font-semibold">Like!</span>
+                <span className="font-semibold">{t('swipe.likeIndicator')}</span>
               </div>
             </div>
           )}
@@ -78,7 +80,7 @@ export function SwipeCardV2({
             <div className="absolute top-8 left-8 z-50 animate-pulse">
               <div className="flex items-center gap-2 bg-destructive text-destructive-foreground px-4 py-2 rounded-full">
                 <X className="w-5 h-5" />
-                <span className="font-semibold">Nope!</span>
+                <span className="font-semibold">{t('swipe.nopeIndicator')}</span>
               </div>
             </div>
           )}
@@ -115,7 +117,7 @@ export function SwipeCardV2({
           size="lg"
           variant="outline"
           className="rounded-full w-16 h-16 p-0 hover:bg-destructive hover:text-destructive-foreground transition-all bg-transparent"
-          title="Pass (Left Swipe)"
+          title={t('swipe.passLeft')}
         >
           <X className="w-6 h-6" />
         </Button>
@@ -125,7 +127,7 @@ export function SwipeCardV2({
           disabled={isLoading}
           size="lg"
           className="rounded-full w-16 h-16 p-0 bg-primary hover:bg-primary/90 transition-all"
-          title="Super Like"
+          title={t('swipe.superLike')}
         >
           <Zap className="w-6 h-6" />
         </Button>
@@ -135,7 +137,7 @@ export function SwipeCardV2({
           disabled={isLoading}
           size="lg"
           className="rounded-full w-16 h-16 p-0 bg-accent hover:bg-accent/90 transition-all"
-          title="Like (Right Swipe)"
+          title={t('swipe.likeRight')}
         >
           <Heart className="w-6 h-6" />
         </Button>
@@ -143,7 +145,7 @@ export function SwipeCardV2({
 
       {/* Mobile Instructions */}
       <div className="mt-6 text-center text-sm text-muted-foreground md:hidden">
-        <p>Swipe left to pass or right to like</p>
+        <p>{t('swipe.instructions')}</p>
       </div>
     </div>
   );

@@ -84,6 +84,89 @@ CREATE INDEX idx_likes_receiverId ON likes("receiverId");
 CREATE INDEX idx_matches_user1Id ON matches("user1Id");
 CREATE INDEX idx_matches_user2Id ON matches("user2Id");
 CREATE INDEX idx_messages_matchId ON messages("matchId");
+
+-- AI profiles
+CREATE TABLE ai_profiles (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  age INT NOT NULL,
+  gender TEXT NOT NULL,
+  "relationshipType" TEXT NOT NULL,
+  bio TEXT,
+  interests TEXT[] DEFAULT '{}',
+  "photoUrl" TEXT,
+  city TEXT,
+  country TEXT,
+  "aiPrompt" TEXT,
+  "createdAt" TIMESTAMP DEFAULT NOW()
+);
+
+-- Dating challenges
+CREATE TABLE dating_challenges (
+  id TEXT PRIMARY KEY,
+  "gameType" TEXT,
+  trigger TEXT,
+  "challengeText" TEXT NOT NULL,
+  difficulty TEXT,
+  "userId" TEXT,
+  "targetId" TEXT,
+  "createdAt" TIMESTAMP DEFAULT NOW()
+);
+
+-- Games
+CREATE TABLE games (
+  id TEXT PRIMARY KEY,
+  "gameType" TEXT NOT NULL,
+  mode TEXT NOT NULL,
+  "player1Id" TEXT NOT NULL,
+  "player2Id" TEXT,
+  status TEXT NOT NULL DEFAULT 'active',
+  state JSONB DEFAULT '{}'::jsonb,
+  "createdAt" TIMESTAMP DEFAULT NOW(),
+  "updatedAt" TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE game_moves (
+  id TEXT PRIMARY KEY,
+  "gameId" TEXT NOT NULL,
+  "playerId" TEXT NOT NULL,
+  move JSONB NOT NULL,
+  "createdAt" TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE game_results (
+  id TEXT PRIMARY KEY,
+  "gameId" TEXT UNIQUE NOT NULL,
+  "winnerId" TEXT,
+  "loserId" TEXT,
+  "gameType" TEXT,
+  "createdAt" TIMESTAMP DEFAULT NOW()
+);
+
+-- Chat rooms
+CREATE TABLE chat_rooms (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  "ownerId" TEXT,
+  "isVerifiedOnly" BOOLEAN DEFAULT FALSE,
+  "createdAt" TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE room_members (
+  "roomId" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "joinedAt" TIMESTAMP DEFAULT NOW(),
+  PRIMARY KEY ("roomId", "userId")
+);
+
+CREATE TABLE room_messages (
+  id TEXT PRIMARY KEY,
+  "roomId" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  content TEXT NOT NULL,
+  "createdAt" TIMESTAMP DEFAULT NOW()
+);
 CREATE INDEX idx_messages_senderId ON messages("senderId");
 CREATE INDEX idx_notifications_userId ON notifications("userId");
 CREATE INDEX idx_users_isOnline ON users("isOnline");

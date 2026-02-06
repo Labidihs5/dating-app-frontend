@@ -4,6 +4,7 @@ import React, { useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Star } from 'lucide-react';
+import { useI18n } from '@/components/i18n/LanguageProvider';
 
 interface DistanceSliderProps {
   initialDistance?: number;
@@ -18,6 +19,7 @@ export function DistanceSlider({
   onChange,
   showLabel = true,
 }: DistanceSliderProps) {
+  const { t, language } = useI18n();
   const [distance, setDistance] = useState(initialDistance);
   const MIN_DISTANCE = 5;
   const MAX_DISTANCE = isPremium ? 200 : 100;
@@ -32,13 +34,13 @@ export function DistanceSlider({
   );
 
   const getDistanceLabel = () => {
-    if (distance < 1) return 'Exact location';
-    if (distance < 5) return 'Very close';
-    if (distance < 10) return 'Close by';
-    if (distance < 25) return 'Nearby';
-    if (distance < 50) return 'Around town';
-    if (distance < 100) return 'Across city';
-    return 'Across region';
+    if (distance < 1) return t('distanceSlider.exactLocation');
+    if (distance < 5) return t('distanceSlider.veryClose');
+    if (distance < 10) return t('distanceSlider.closeBy');
+    if (distance < 25) return t('distanceSlider.nearby');
+    if (distance < 50) return t('distanceSlider.aroundTown');
+    if (distance < 100) return t('distanceSlider.acrossCity');
+    return t('distanceSlider.acrossRegion');
   };
 
   const getNearbyCount = () => {
@@ -48,18 +50,20 @@ export function DistanceSlider({
     return counts[index];
   };
 
+  const formatNumber = (value: number) => value.toLocaleString(language);
+
   return (
     <div className="space-y-4">
       {showLabel && (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MapPin className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold text-foreground">Search Distance</h3>
+            <h3 className="font-semibold text-foreground">{t('distanceSlider.title')}</h3>
           </div>
           {isPremium && (
             <Badge variant="secondary" className="bg-accent/10 border-accent/30">
               <Star className="w-3 h-3 mr-1" />
-              GOLD
+              {t('common.gold')}
             </Badge>
           )}
         </div>
@@ -70,8 +74,8 @@ export function DistanceSlider({
           {/* Current Distance Display */}
           <div className="text-center space-y-2">
             <div className="flex items-center justify-center gap-2">
-              <span className="text-4xl font-bold text-primary">{distance}</span>
-              <span className="text-lg text-muted-foreground">km</span>
+              <span className="text-4xl font-bold text-primary">{formatNumber(distance)}</span>
+              <span className="text-lg text-muted-foreground">{t('common.km')}</span>
             </div>
             <p className="text-sm text-muted-foreground">{getDistanceLabel()}</p>
           </div>
@@ -103,19 +107,20 @@ export function DistanceSlider({
                 [&::-moz-range-thumb]:border-2
                 [&::-moz-range-thumb]:border-primary-foreground
               "
-              aria-label="Search distance"
+              aria-label={t('distanceSlider.ariaLabel')}
             />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{MIN_DISTANCE} km</span>
-              <span>{MAX_DISTANCE} km</span>
+              <span>{formatNumber(MIN_DISTANCE)} {t('common.km')}</span>
+              <span>{formatNumber(MAX_DISTANCE)} {t('common.km')}</span>
             </div>
           </div>
 
           {/* Profile Count */}
           <div className="bg-background/50 border border-border rounded-lg p-3 text-center">
             <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">{getNearbyCount()}</span>{' '}
-              profiles nearby
+              <span className="font-semibold text-foreground">
+                {t('distanceSlider.profilesNearby', { count: formatNumber(getNearbyCount()) })}
+              </span>
             </p>
           </div>
 
@@ -123,7 +128,7 @@ export function DistanceSlider({
           {!isPremium && (
             <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-3">
               <p className="text-xs text-destructive">
-                <strong>FREE:</strong> Approximate distance. GOLD shows exact distance!
+                <strong>{t('common.free')}:</strong> {t('distanceSlider.freeInfo')}
               </p>
             </div>
           )}
@@ -131,7 +136,7 @@ export function DistanceSlider({
           {isPremium && (
             <div className="bg-success/5 border border-success/20 rounded-lg p-3">
               <p className="text-xs text-success">
-                <strong>GOLD:</strong> Exact distance precision! Premium matching.
+                <strong>{t('common.gold')}:</strong> {t('distanceSlider.goldInfo')}
               </p>
             </div>
           )}

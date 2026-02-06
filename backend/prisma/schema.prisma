@@ -10,6 +10,7 @@ datasource db {
 model User {
   id               String   @id // Telegram User ID
   telegramUsername String?  // @username from Telegram
+  email            String?  // Email address
   name             String   // Display name (from Telegram, editable)
   age              Int      // Editable
   gender           String   // Editable
@@ -32,8 +33,30 @@ model User {
   matches2      Match[] @relation("Match2")
   sentMessages  Message[] @relation("MessageSender")
   notifications Notification[]
+  settings      UserSettings?
 
   @@map("users")
+}
+
+model UserSettings {
+  id                   String  @id @default(cuid())
+  userId               String  @unique
+  emailNotifications   Boolean @default(true)
+  matchNotifications   Boolean @default(true)
+  messageNotifications Boolean @default(true)
+  pushNotifications    Boolean @default(true)
+  darkMode             Boolean @default(false)
+  profileVisibility    String  @default("public") // public, friends, private
+  language             String  @default("en")
+  hideExactLocation    Boolean @default(false)
+  locationSharing      String  @default("exact") // exact, approximate, disabled
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_settings")
 }
 
 model Like {
@@ -95,4 +118,113 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+model AiProfile {
+  id               String   @id @default(cuid())
+  name             String
+  age              Int
+  gender           String
+  relationshipType String
+  bio              String?
+  interests        String[]
+  photoUrl         String?
+  city             String?
+  country          String?
+  aiPrompt         String?
+  createdAt        DateTime @default(now())
+
+  @@map("ai_profiles")
+}
+
+model DatingChallenge {
+  id            String   @id @default(cuid())
+  gameType      String?
+  trigger       String?
+  challengeText String
+  difficulty    String?
+  userId        String?
+  targetId      String?
+  createdAt     DateTime @default(now())
+
+  @@map("dating_challenges")
+}
+
+model Game {
+  id        String   @id @default(cuid())
+  gameType  String
+  mode      String
+  player1Id String
+  player2Id String?
+  status    String   @default("active")
+  state     Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  moves  GameMove[]
+  result GameResult?
+
+  @@map("games")
+}
+
+model GameMove {
+  id        String   @id @default(cuid())
+  gameId    String
+  playerId  String
+  move      Json
+  createdAt DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@map("game_moves")
+}
+
+model GameResult {
+  id        String   @id @default(cuid())
+  gameId    String   @unique
+  winnerId  String?
+  loserId   String?
+  gameType  String?
+  createdAt DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@map("game_results")
+}
+
+model ChatRoom {
+  id             String   @id @default(cuid())
+  name           String
+  type           String
+  ownerId        String?
+  isVerifiedOnly Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  members  RoomMember[]
+  messages RoomMessage[]
+
+  @@map("chat_rooms")
+}
+
+model RoomMember {
+  roomId   String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, userId])
+  @@map("room_members")
+}
+
+model RoomMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("room_messages")
 }

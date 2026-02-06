@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MapPin, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useI18n } from '@/components/i18n/LanguageProvider';
 
 interface LocationSetupProps {
   onLocationSelect: (location: {
@@ -19,6 +20,7 @@ interface LocationSetupProps {
 }
 
 export function LocationSetup({ onLocationSelect, onSkip }: LocationSetupProps) {
+  const { t } = useI18n();
   const [selectedOption, setSelectedOption] = useState<'gps' | 'manual' | null>(null);
   const [isLoadingGPS, setIsLoadingGPS] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export function LocationSetup({ onLocationSelect, onSkip }: LocationSetupProps) 
 
   const handleGetGPS = useCallback(async () => {
     if (!navigator.geolocation) {
-      setGpsError('Geolocation is not supported by your browser');
+      setGpsError(t('locationSetup.gpsErrorUnsupported'));
       setLocationStatus('error');
       return;
     }
@@ -71,16 +73,16 @@ export function LocationSetup({ onLocationSelect, onSkip }: LocationSetupProps) 
         }
       },
       (error) => {
-        let errorMessage = 'Unable to get your location';
+        let errorMessage = t('locationSetup.gpsErrorGeneric');
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Location permission denied. Please enable it in your settings.';
+            errorMessage = t('locationSetup.gpsErrorDenied');
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information is unavailable.';
+            errorMessage = t('locationSetup.gpsErrorUnavailable');
             break;
           case error.TIMEOUT:
-            errorMessage = 'The request to get user location timed out.';
+            errorMessage = t('locationSetup.gpsErrorTimeout');
             break;
         }
         setGpsError(errorMessage);
@@ -106,9 +108,9 @@ export function LocationSetup({ onLocationSelect, onSkip }: LocationSetupProps) 
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-foreground">Share Your Location</h2>
+        <h2 className="text-2xl font-bold text-foreground">{t('locationSetup.title')}</h2>
         <p className="text-muted-foreground">
-          Help us find matches near you. Your location can stay private.
+          {t('locationSetup.subtitle')}
         </p>
       </div>
 
@@ -128,10 +130,10 @@ export function LocationSetup({ onLocationSelect, onSkip }: LocationSetupProps) 
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-foreground mb-1">
-                📍 Share Exact GPS Location
+                {t('locationSetup.gpsTitle')}
               </h3>
               <p className="text-sm text-muted-foreground mb-3">
-                Most accurate. We&apos;ll show approximate distance to matches.
+                {t('locationSetup.gpsBody')}
               </p>
 
               {selectedOption === 'gps' && (
@@ -147,17 +149,17 @@ export function LocationSetup({ onLocationSelect, onSkip }: LocationSetupProps) 
                   {isLoadingGPS ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Getting Location...
+                      {t('locationSetup.gettingLocation')}
                     </>
                   ) : locationStatus === 'success' ? (
                     <>
                       <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Location Set
+                      {t('locationSetup.locationSet')}
                     </>
                   ) : (
                     <>
                       <MapPin className="w-4 h-4 mr-2" />
-                      Get My Location
+                      {t('locationSetup.getMyLocation')}
                     </>
                   )}
                 </Button>
@@ -188,21 +190,21 @@ export function LocationSetup({ onLocationSelect, onSkip }: LocationSetupProps) 
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-foreground mb-1">
-                🌍 Choose City / Country
+                {t('locationSetup.manualTitle')}
               </h3>
               <p className="text-sm text-muted-foreground mb-3">
-                Manual selection. Approximate matches location.
+                {t('locationSetup.manualBody')}
               </p>
 
               {selectedOption === 'manual' && (
                 <div className="space-y-3">
                   <div>
                     <Label htmlFor="city" className="text-sm">
-                      City
+                      {t('locationSetup.city')}
                     </Label>
                     <Input
                       id="city"
-                      placeholder="e.g., Paris"
+                      placeholder={t('locationSetup.cityPlaceholder')}
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       className="mt-1"
@@ -210,11 +212,11 @@ export function LocationSetup({ onLocationSelect, onSkip }: LocationSetupProps) 
                   </div>
                   <div>
                     <Label htmlFor="country" className="text-sm">
-                      Country
+                      {t('locationSetup.country')}
                     </Label>
                     <Input
                       id="country"
-                      placeholder="e.g., France"
+                      placeholder={t('locationSetup.countryPlaceholder')}
                       value={country}
                       onChange={(e) => setCountry(e.target.value)}
                       className="mt-1"
@@ -226,7 +228,7 @@ export function LocationSetup({ onLocationSelect, onSkip }: LocationSetupProps) 
                     className="w-full"
                     size="sm"
                   >
-                    Confirm Location
+                    {t('locationSetup.confirmLocation')}
                   </Button>
                 </div>
               )}
@@ -249,10 +251,10 @@ export function LocationSetup({ onLocationSelect, onSkip }: LocationSetupProps) 
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-foreground mb-1">
-                ⏭ Skip for Now
+                {t('locationSetup.skipTitle')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                You can add location later in your profile settings.
+                {t('locationSetup.skipBody')}
               </p>
             </div>
           </div>
@@ -266,7 +268,7 @@ export function LocationSetup({ onLocationSelect, onSkip }: LocationSetupProps) 
             onClick={onSkip}
             className="flex-1 bg-transparent"
           >
-            Skip
+            {t('common.skip')}
           </Button>
         )}
         <Button
@@ -280,7 +282,7 @@ export function LocationSetup({ onLocationSelect, onSkip }: LocationSetupProps) 
           }}
           className="flex-1"
         >
-          {locationStatus === 'loading' ? 'Processing...' : 'Continue'}
+          {locationStatus === 'loading' ? t('locationSetup.processing') : t('common.continue')}
         </Button>
       </div>
     </div>

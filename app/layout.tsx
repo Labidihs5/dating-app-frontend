@@ -3,6 +3,9 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import Script from 'next/script'
+import { NotificationProvider } from '@/components/notifications/NotificationProvider'
+import { LanguageProvider } from '@/components/i18n/LanguageProvider'
+import { AuthBootstrap } from '@/components/auth/AuthBootstrap'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -25,10 +28,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
         <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
-        {children}
+        <LanguageProvider>
+          <AuthBootstrap />
+          <NotificationProvider />
+          {children}
+        </LanguageProvider>
         <Analytics />
       </body>
     </html>

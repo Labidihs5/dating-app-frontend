@@ -2,6 +2,7 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const router = express.Router();
 const prisma = new PrismaClient();
+const { sendNotificationEmail } = require('../services/notificationService');
 
 // GET /api/likes - Get incoming likes
 router.get('/', async (req, res) => {
@@ -49,6 +50,11 @@ router.post('/:id/respond', async (req, res) => {
           user2Id: userId
         }
       });
+
+      await Promise.all([
+        sendNotificationEmail(like.senderId, 'match', { matchUserId: userId }),
+        sendNotificationEmail(userId, 'match', { matchUserId: like.senderId })
+      ]);
       
       res.json({ match, reciprocalLike });
     } else {

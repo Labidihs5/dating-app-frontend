@@ -3,22 +3,23 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Heart, MessageCircle, Users, Zap, Star } from 'lucide-react';
+import { Heart, MessageCircle, Users, Zap, Star, Gamepad2, MessagesSquare, Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { NotificationToast } from '@/components/notifications/NotificationToast';
 import { useNotifications } from '@/hooks/useNotifications';
 import { getTelegramUser } from '@/lib/telegram-utils';
 import { userAPI } from '@/lib/api-services';
+import { useI18n } from '@/components/i18n/LanguageProvider';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { t, dir } = useI18n();
   const [userId, setUserId] = useState<string | null>(null);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
-  const { notifications, unreadCount, toasts, markAsRead, markAllAsRead, removeToast } = useNotifications(userId);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   
   useOnlineStatus(userId);
 
@@ -42,16 +43,19 @@ export function Navbar() {
   };
 
   const navItems = [
-    { href: '/', label: 'Discover', icon: Zap },
-    { href: '/likes', label: 'Likes', icon: Heart },
-    { href: '/matches', label: 'Matches', icon: Users },
-    { href: '/chat', label: 'Chat', icon: MessageCircle },
-    { href: '/gold', label: 'Gold', icon: Star },
+    { href: '/', label: t('nav.discover'), icon: Zap },
+    { href: '/likes', label: t('nav.likes'), icon: Heart },
+    { href: '/matches', label: t('nav.matches'), icon: Users },
+    { href: '/chat', label: t('nav.chat'), icon: MessageCircle },
+    { href: '/gold', label: t('nav.gold'), icon: Star },
+    { href: '/games', label: t('nav.games'), icon: Gamepad2 },
+    { href: '/rooms', label: t('nav.rooms'), icon: MessagesSquare },
+    { href: '/challenges', label: t('nav.challenges'), icon: Flag },
   ];
 
   return (
     <>
-      <div className="fixed top-4 right-4 z-50 flex items-start gap-4">
+      <div className={`fixed top-4 ${dir === 'rtl' ? 'left-4' : 'right-4'} z-50 flex items-start gap-4`}>
         <button
           onClick={() => router.push('/settings')}
           className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary hover:border-accent transition-colors bg-muted flex items-center justify-center"
@@ -74,22 +78,10 @@ export function Navbar() {
             onMarkAllAsRead={markAllAsRead}
           />
         </div>
-        <div className="space-y-2">
-          {toasts.map(toast => (
-            <NotificationToast
-              key={toast.id}
-              id={toast.id}
-              title={toast.title}
-              message={toast.message}
-              type={toast.type as 'match' | 'message' | 'like'}
-              onClose={removeToast}
-            />
-          ))}
-        </div>
       </div>
 
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card md:left-0 md:right-auto md:top-0 md:bottom-auto md:w-20 md:border-r md:border-t-0">
-        <div className="flex justify-around md:flex-col md:h-screen md:items-center md:justify-start md:pt-8 md:gap-4">
+        <div className="flex justify-around gap-2 overflow-x-auto px-2 py-2 md:flex-col md:h-screen md:items-center md:justify-start md:pt-8 md:gap-4 md:overflow-visible md:px-0 md:py-0">
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href;
           return (
