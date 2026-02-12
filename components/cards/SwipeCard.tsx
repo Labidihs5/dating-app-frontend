@@ -170,7 +170,9 @@ export function SwipeCard({
   }, [isAnimatingSwipe, triggerSwipe]);
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-4">
+    <div className="relative flex h-full w-full flex-col items-center justify-center gap-6 p-4">
+      <div className="pointer-events-none absolute -left-6 top-8 h-24 w-24 rounded-full bg-primary/20 blur-3xl" />
+      <div className="pointer-events-none absolute right-6 -bottom-6 h-28 w-28 rounded-full bg-accent/25 blur-3xl" />
       <div
         ref={containerRef}
         onMouseDown={handleStart}
@@ -181,7 +183,7 @@ export function SwipeCard({
         onTouchMove={handleMove}
         onTouchEnd={handleEnd}
         onTouchCancel={handleEnd}
-        className="w-full max-w-sm aspect-[3/4] rounded-2xl cursor-grab active:cursor-grabbing select-none"
+        className="relative w-full max-w-sm aspect-[3/4] cursor-grab select-none overflow-hidden rounded-[32px] border border-white/70 bg-white/70 shadow-[0_25px_60px_rgba(0,0,0,0.18)] backdrop-blur-2xl active:cursor-grabbing"
         style={{
           transform: `translateX(${transform.x}px) translateY(${transform.y}px) rotate(${transform.rotation}deg) scale(${isDragging ? 0.98 : 1})`,
           transition: isDragging
@@ -194,7 +196,29 @@ export function SwipeCard({
           WebkitBackfaceVisibility: 'hidden',
         }}
       >
-        <ProfileCard {...profile} />
+        <div className="absolute inset-0">
+          <ProfileCard {...profile} />
+        </div>
+
+        <div className="absolute top-4 left-4 flex gap-2">
+          <span className="gradient-chip px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+            {t('nav.discover')}
+          </span>
+          {profile.distance && (
+            <div className="glass-panel rounded-full px-3 py-1 text-xs font-semibold text-foreground">
+              <DistanceBadge distance={profile.distance} />
+            </div>
+          )}
+        </div>
+
+        <div className="absolute top-4 right-4 flex gap-2">
+          <div className="glass-panel rounded-full px-3 py-1 text-xs font-semibold text-primary">
+            Live
+          </div>
+          <div className="glass-panel rounded-full px-3 py-1 text-xs font-semibold text-foreground/80">
+            HD
+          </div>
+        </div>
       </div>
 
       {/* Swipe Indicators */}
@@ -213,13 +237,13 @@ export function SwipeCard({
         </div>
       )}
 
-      <div className="mt-8 flex gap-4 justify-center w-full max-w-sm flex-wrap">
+      <div className="mt-2 flex w-full max-w-md flex-wrap justify-center gap-5">
         <Button
           onClick={() => triggerSwipe('left')}
           disabled={isLoading}
           size="lg"
-          variant="outline"
-          className="rounded-full w-16 h-16 p-0 hover:bg-destructive hover:text-destructive-foreground transition-all bg-transparent"
+          variant="ghost"
+          className="h-16 w-16 rounded-full border border-white/70 bg-white/90 p-0 text-foreground shadow-[0_16px_32px_rgba(0,0,0,0.12)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
           title={t('swipe.pass')}
         >
           <X className="w-6 h-6" />
@@ -229,7 +253,8 @@ export function SwipeCard({
           onClick={onSuperLike}
           disabled={isLoading}
           size="lg"
-          className="rounded-full w-16 h-16 p-0 bg-primary hover:bg-primary/90 transition-all"
+          variant="ghost"
+          className="h-16 w-16 rounded-full border border-white/70 bg-gradient-to-br from-white/90 via-primary/20 to-primary/40 p-0 text-primary shadow-[0_16px_40px_rgba(111,72,220,0.35)] transition-all hover:-translate-y-0.5 hover:brightness-105"
           title={t('swipe.superLike')}
         >
           <Zap className="w-6 h-6" />
@@ -239,7 +264,8 @@ export function SwipeCard({
           onClick={() => triggerSwipe('right')}
           disabled={isLoading}
           size="lg"
-          className="rounded-full w-16 h-16 p-0 bg-accent hover:bg-accent/90 transition-all"
+          variant="ghost"
+          className="h-16 w-16 rounded-full border border-white/70 bg-gradient-to-br from-[#f472b6] via-[#f58fd2] to-[#9d6bff] p-0 text-white shadow-[0_18px_42px_rgba(236,72,153,0.4)] transition-all hover:-translate-y-0.5"
           title={t('swipe.like')}
         >
           <Heart className="w-6 h-6" />

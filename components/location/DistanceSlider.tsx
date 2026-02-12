@@ -24,6 +24,10 @@ export function DistanceSlider({
   const MIN_DISTANCE = 5;
   const MAX_DISTANCE = isPremium ? 200 : 100;
 
+  React.useEffect(() => {
+    setDistance(initialDistance);
+  }, [initialDistance]);
+
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = Number(e.target.value);
@@ -69,7 +73,7 @@ export function DistanceSlider({
         </div>
       )}
 
-      <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+      <Card className="glass-panel border-white/70 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.08)]">
         <div className="space-y-4">
           {/* Current Distance Display */}
           <div className="text-center space-y-2">
@@ -88,25 +92,7 @@ export function DistanceSlider({
               max={MAX_DISTANCE}
               value={distance}
               onChange={handleChange}
-              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer
-                [&::-webkit-slider-thumb]:appearance-none
-                [&::-webkit-slider-thumb]:w-6
-                [&::-webkit-slider-thumb]:h-6
-                [&::-webkit-slider-thumb]:rounded-full
-                [&::-webkit-slider-thumb]:bg-primary
-                [&::-webkit-slider-thumb]:cursor-pointer
-                [&::-webkit-slider-thumb]:shadow-lg
-                [&::-webkit-slider-thumb]:border-2
-                [&::-webkit-slider-thumb]:border-primary-foreground
-                [&::-moz-range-thumb]:w-6
-                [&::-moz-range-thumb]:h-6
-                [&::-moz-range-thumb]:rounded-full
-                [&::-moz-range-thumb]:bg-primary
-                [&::-moz-range-thumb]:cursor-pointer
-                [&::-moz-range-thumb]:shadow-lg
-                [&::-moz-range-thumb]:border-2
-                [&::-moz-range-thumb]:border-primary-foreground
-              "
+              className="gradient-slider w-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-moz-range-thumb]:appearance-none"
               aria-label={t('distanceSlider.ariaLabel')}
             />
             <div className="flex justify-between text-xs text-muted-foreground">

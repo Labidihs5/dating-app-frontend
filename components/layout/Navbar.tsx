@@ -55,33 +55,36 @@ export function Navbar() {
 
   return (
     <>
-      <div className={`fixed top-4 ${dir === 'rtl' ? 'left-4' : 'right-4'} z-50 flex items-start gap-4`}>
-        <button
-          onClick={() => router.push('/settings')}
-          className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary hover:border-accent transition-colors bg-muted flex items-center justify-center"
-        >
-          {userPhoto ? (
-            <img
-              src={`/api/photos?path=${encodeURIComponent(userPhoto)}`}
-              alt="Profile"
-              className="w-full h-full object-cover"
+      <div className={`fixed top-4 ${dir === 'rtl' ? 'left-4' : 'right-4'} z-50 flex items-center gap-3`}>
+        <div className="glass-panel rounded-full px-3 py-2 flex items-center gap-2 border-white/70 shadow-[0_14px_40px_rgba(139,92,246,0.22)] backdrop-blur-xl">
+          <button
+            onClick={() => router.push('/settings')}
+            className="w-11 h-11 rounded-full overflow-hidden border border-white/70 bg-white/80 shadow-[0_10px_30px_rgba(0,0,0,0.08)] flex items-center justify-center transition-transform hover:-translate-y-0.5"
+          >
+            {userPhoto ? (
+              <img
+                src={`/api/photos?path=${encodeURIComponent(userPhoto)}`}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-base font-semibold text-primary">{userId?.[0]?.toUpperCase()}</span>
+            )}
+          </button>
+          <div className="block">
+            <NotificationBell
+              notifications={notifications}
+              unreadCount={unreadCount}
+              onMarkAsRead={markAsRead}
+              onMarkAllAsRead={markAllAsRead}
             />
-          ) : (
-            <span className="text-sm font-bold">{userId?.[0]?.toUpperCase()}</span>
-          )}
-        </button>
-        <div className="block">
-          <NotificationBell
-            notifications={notifications}
-            unreadCount={unreadCount}
-            onMarkAsRead={markAsRead}
-            onMarkAllAsRead={markAllAsRead}
-          />
+          </div>
         </div>
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card md:left-0 md:right-auto md:top-0 md:bottom-auto md:w-20 md:border-r md:border-t-0">
-        <div className="flex justify-around gap-2 overflow-x-auto px-2 py-2 md:flex-col md:h-screen md:items-center md:justify-start md:pt-8 md:gap-4 md:overflow-visible md:px-0 md:py-0">
+      <nav className="fixed inset-x-0 bottom-4 z-40 md:bottom-auto md:top-8 md:left-6 md:right-auto md:w-20">
+        <div className="flex justify-center md:justify-start">
+          <div className="neon-pill flex justify-between gap-2 px-4 py-3 w-[92%] max-w-xl md:w-20 md:flex-col md:items-center md:gap-4 md:px-3 md:py-4">
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href;
           return (
@@ -89,17 +92,19 @@ export function Navbar() {
               key={href}
               href={href}
               className={cn(
-                'flex items-center justify-center w-14 h-14 rounded-lg transition-all duration-200 md:w-16 md:h-16',
+                'flex flex-col items-center justify-center rounded-full transition-all duration-200 md:w-12 md:h-12 w-12 h-12',
                 isActive
-                  ? 'bg-primary text-primary-foreground shadow-lg'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  ? 'bg-white/90 text-primary shadow-[0_10px_25px_rgba(139,92,246,0.35)] border border-white/80'
+                  : 'bg-white/45 text-foreground/60 border border-white/60 hover:text-foreground hover:-translate-y-0.5'
               )}
               title={label}
             >
-              <Icon className="w-6 h-6" />
+              <Icon className="w-5 h-5" />
+              <span className="sr-only md:not-sr-only md:text-[11px] md:font-semibold">{label}</span>
             </Link>
           );
         })}
+        </div>
       </div>
     </nav>
     </>

@@ -1,6 +1,6 @@
 import React from "react"
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Sora, Space_Grotesk } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import Script from 'next/script'
 import { NotificationProvider } from '@/components/notifications/NotificationProvider'
@@ -8,8 +8,8 @@ import { LanguageProvider } from '@/components/i18n/LanguageProvider'
 import { AuthBootstrap } from '@/components/auth/AuthBootstrap'
 import './globals.css'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const sora = Sora({ subsets: ['latin'], variable: '--font-sans' })
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' })
 
 export const metadata: Metadata = {
   title: 'HeartMatch - Premium Dating',
@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans antialiased`}>
+      <body className={`${sora.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
         <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
         <LanguageProvider>
           <AuthBootstrap />
