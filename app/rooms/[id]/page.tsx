@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ChevronLeft, Send, Users, MoreVertical } from 'lucide-react';
-import io from 'socket.io-client';
 
 interface Message {
   id: string;
@@ -23,17 +22,11 @@ export default function RoomChatPage() {
   const [room, setRoom] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [socket, setSocket] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadRoom();
     loadMessages();
-    connectSocket();
-
-    return () => {
-      if (socket) socket.disconnect();
-    };
   }, [roomId]);
 
   useEffect(() => {
@@ -64,22 +57,6 @@ export default function RoomChatPage() {
     }
   };
 
-  const connectSocket = () => {
-    const newSocket = io('http://localhost:3001/rooms', {
-      auth: { token: localStorage.getItem('token') }
-    });
-
-    newSocket.on('connect', () => {
-      newSocket.emit('room:join', { roomId, userId: localStorage.getItem('userId') });
-    });
-
-    newSocket.on('room:message:new', (message: Message) => {
-      setMessages(prev => [...prev, message]);
-    });
-
-    setSocket(newSocket);
-  };
-
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
 
@@ -95,6 +72,7 @@ export default function RoomChatPage() {
 
       if (response.ok) {
         setNewMessage('');
+        loadMessages();
       }
     } catch (error) {
       console.error('Error sending message:', error);
