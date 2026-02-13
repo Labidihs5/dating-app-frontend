@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, Heart, MessageCircle } from 'lucide-react';
 
 export default function ExplorePage() {
   const router = useRouter();
@@ -94,7 +94,7 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 pb-24">
-      <div className="sticky top-0 bg-white/80 backdrop-blur-md z-10 px-4 py-3 border-b border-gray-200">
+      <div className="sticky top-0 bg-white/90 backdrop-blur-md z-10 px-4 py-3 border-b border-gray-100">
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-2xl font-bold text-gray-900">Explore</h1>
           <button className="p-2">
@@ -188,7 +188,7 @@ export default function ExplorePage() {
         ))}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200 px-6 py-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-100 px-6 py-3">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <button onClick={() => router.push('/')} className="p-3">
             <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,9 +196,7 @@ export default function ExplorePage() {
             </svg>
           </button>
           <button className="p-3">
-            <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
-            </svg>
+            <Heart className="w-6 h-6 text-gray-400" />
           </button>
           <button className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center -mt-6 shadow-lg">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,14 +204,12 @@ export default function ExplorePage() {
             </svg>
           </button>
           <button className="p-3">
-            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
+            <MessageCircle className="w-6 h-6 text-gray-400" />
           </button>
-          <button className="p-3">
-            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
+          <button onClick={() => router.push('/user-profile')} className="p-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 border-2 border-white overflow-hidden">
+              <img src="/placeholder-user.jpg" alt="" className="w-full h-full object-cover" />
+            </div>
           </button>
         </div>
       </div>

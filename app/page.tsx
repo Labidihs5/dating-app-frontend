@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { SwipeCardModern } from '@/components/cards/SwipeCardModern';
+import { Heart, X, Star, ChevronLeft } from 'lucide-react';
 import { discoveryAPI } from '@/lib/api-services';
 import { getTelegramUser } from '@/lib/telegram-utils';
 
@@ -24,6 +24,7 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
   useEffect(() => {
     const user = getTelegramUser();
@@ -54,6 +55,7 @@ export default function Home() {
       console.error('Error passing profile:', error);
     }
     setProfiles(profiles.filter((_, idx) => idx !== currentIndex));
+    setCurrentPhotoIndex(0);
   };
 
   const handleSwipeRight = async () => {
@@ -68,6 +70,7 @@ export default function Home() {
       console.error('Error liking profile:', error);
     }
     setProfiles(profiles.filter((_, idx) => idx !== currentIndex));
+    setCurrentPhotoIndex(0);
   };
 
   const handleSuperLike = async () => {
@@ -77,47 +80,84 @@ export default function Home() {
       console.error('Error super liking profile:', error);
     }
     setProfiles(profiles.filter((_, idx) => idx !== currentIndex));
+    setCurrentPhotoIndex(0);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!currentProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 flex items-center justify-center p-4">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">No more profiles</h2>
+          <button onClick={() => userId && loadProfiles(userId)} className="mt-4 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full">
+            Refresh
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm h-[600px] relative">
-        {loading ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-gray-600">Loading...</p>
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl">
+          <div className="absolute top-4 left-4 right-4 flex gap-1 z-10">
+            {currentProfile.photos.map((_, idx) => (
+              <div key={idx} className={`flex-1 h-1 rounded-full ${idx === currentPhotoIndex ? 'bg-white' : 'bg-white/30'}`} />
+            ))}
           </div>
-        ) : currentProfile ? (
-          <SwipeCardModern
-            profile={currentProfile}
-            onSwipeLeft={handleSwipeLeft}
-            onSwipeRight={handleSwipeRight}
-            onSuperLike={handleSuperLike}
+
+          <img 
+            src={`/api/photos?path=${encodeURIComponent(currentProfile.photos[currentPhotoIndex])}`}
+            alt={currentProfile.name}
+            className="w-full h-full object-cover"
           />
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <h2 className="text-xl font-semibold mb-2">No more profiles</h2>
-            <p className="text-gray-600 mb-6">Check back later for new matches</p>
-            <button
-              onClick={() => userId && loadProfiles(userId)}
-              className="px-6 py-3 bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-full font-semibold"
-            >
-              Refresh
-            </button>
+          
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
+          
+          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+            <h2 className="text-3xl font-bold mb-1">{currentProfile.name}, {currentProfile.age}</h2>
+            {currentProfile.distance && (
+              <p className="text-sm text-white/90 mb-2">{currentProfile.distance} kilometers away</p>
+            )}
           </div>
-        )}
+
+          <button onClick={() => router.back()} className="absolute top-6 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
+            <ChevronLeft className="w-5 h-5 text-white" />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <button onClick={handleSwipeLeft} className="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform">
+            <X className="w-7 h-7 text-red-500" />
+          </button>
+          
+          <button onClick={handleSuperLike} className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform">
+            <Star className="w-8 h-8 text-white fill-white" />
+          </button>
+          
+          <button onClick={handleSwipeRight} className="w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform">
+            <Heart className="w-7 h-7 text-pink-500 fill-pink-500" />
+          </button>
+        </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200 px-6 py-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-200 px-6 py-3">
         <div className="flex items-center justify-between max-w-md mx-auto">
-          <button className="p-3">
+          <button onClick={() => router.push('/')} className="p-3">
             <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </button>
           <button onClick={() => router.push('/likes')} className="p-3">
-            <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
-            </svg>
+            <Heart className="w-6 h-6 text-gray-400" />
           </button>
           <button onClick={() => router.push('/explore')} className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center -mt-6 shadow-lg">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

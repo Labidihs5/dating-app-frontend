@@ -136,7 +136,12 @@
   body {
     @apply text-foreground;
     min-height: 100vh;
-    background: linear-gradient(135deg, #fce7f3 0%, #e9d5ff 25%, #ddd6fe 50%, #fce7f3 75%, #fbcfe8 100%);
+    background-color: var(--background);
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(255, 214, 245, 0.9) 0, transparent 35%),
+      radial-gradient(circle at 80% 0%, rgba(197, 206, 255, 0.9) 0, transparent 32%),
+      radial-gradient(circle at 55% 82%, rgba(255, 210, 232, 0.9) 0, transparent 38%),
+      linear-gradient(120deg, #f7e6ff 0%, #ffe9f3 45%, #e7e8ff 100%);
     background-attachment: fixed;
   }
 }
