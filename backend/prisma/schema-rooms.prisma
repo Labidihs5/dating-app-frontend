@@ -1,0 +1,58 @@
+// Add to existing schema.prisma
+
+model Room {
+  id              String        @id @default(uuid())
+  name            String
+  description     String
+  type            String        // PUBLIC | PRIVATE | EVENT
+  category        String        // RESPECT | ADULT | SERIOUS | FUN | CITY
+  isSystemRoom    Boolean       @default(false)
+  ownerId         String?
+  ageRestriction  Int           @default(0)
+  createdAt       DateTime      @default(now())
+  expiresAt       DateTime?
+  members         RoomMember[]
+  messages        RoomMessage[]
+  invites         RoomInvite[]
+  
+  @@index([category])
+  @@index([type])
+  @@index([ownerId])
+}
+
+model RoomMember {
+  id        String   @id @default(uuid())
+  roomId    String
+  userId    String
+  role      String   // OWNER | MODERATOR | MEMBER
+  joinedAt  DateTime @default(now())
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  @@unique([roomId, userId])
+  @@index([userId])
+}
+
+model RoomMessage {
+  id        String   @id @default(uuid())
+  roomId    String
+  userId    String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  @@index([roomId, createdAt])
+  @@index([userId])
+}
+
+model RoomInvite {
+  id            String   @id @default(uuid())
+  roomId        String
+  invitedUserId String
+  invitedBy     String
+  status        String   @default("PENDING") // PENDING | ACCEPTED | DECLINED
+  createdAt     DateTime @default(now())
+  room          Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  @@unique([roomId, invitedUserId])
+  @@index([invitedUserId])
+}
