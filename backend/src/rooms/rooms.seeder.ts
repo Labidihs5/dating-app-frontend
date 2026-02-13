@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
@@ -27,7 +27,7 @@ const SYSTEM_ROOMS = [
   { name: '🌍 International', description: 'Salle ouverte aux membres du monde entier.', category: 'CITY', type: 'PUBLIC', ageRestriction: 0 },
 ];
 
-export async function seedSystemRooms() {
+async function seedSystemRooms() {
   console.log('🌱 Seeding system rooms...');
 
   for (const room of SYSTEM_ROOMS) {
@@ -50,6 +50,8 @@ export async function seedSystemRooms() {
 
   console.log('✅ System rooms seeded successfully');
 }
+
+module.exports = { seedSystemRooms };
 
 // Run if executed directly
 if (require.main === module) {

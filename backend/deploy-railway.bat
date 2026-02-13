@@ -1,62 +1,41 @@
 @echo off
-echo ========================================
-echo 🚀 Deploiement HeartMatch sur Railway
-echo ========================================
-echo.
+echo 🚀 Deploying Backend to Railway...
 
-REM Verifier Railway CLI
+REM 1. Install Railway CLI if not installed
 where railway >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
-    echo ❌ Railway CLI non installe
-    echo 📦 Installation...
-    npm i -g @railway/cli
+    echo 📦 Installing Railway CLI...
+    npm install -g @railway/cli
 )
 
-echo ✅ Railway CLI detecte
-echo.
-
-echo 🔐 Connexion a Railway...
+REM 2. Login to Railway
+echo 🔐 Login to Railway...
 railway login
 
-echo.
-echo 📁 Initialisation du projet...
-railway init
+REM 3. Link to project
+echo 🔗 Linking to Railway project...
+railway link
 
-echo.
-echo 🗄️ Ajout de PostgreSQL...
+REM 4. Add PostgreSQL
+echo 🗄️  Adding PostgreSQL database...
 railway add --database postgres
 
-echo.
-echo ⚙️ Configuration des variables...
-set /p jwt_secret="Entrez votre JWT_SECRET (ou laissez vide pour auto-generer): "
+REM 5. Generate Prisma Client
+echo ⚙️  Generating Prisma Client...
+npx prisma generate
 
-if "%jwt_secret%"=="" (
-    set jwt_secret=super-secret-jwt-key-change-this-in-production
-    echo 🔑 JWT_SECRET par defaut utilise
-)
+REM 6. Push schema
+echo 📊 Pushing database schema...
+railway run npx prisma db push
 
-railway variables set JWT_SECRET="%jwt_secret%"
-railway variables set NODE_ENV="production"
-railway variables set MAX_FILE_SIZE="5242880"
-railway variables set UPLOAD_PATH="./uploads"
+REM 7. Seed rooms
+echo 🌱 Seeding system rooms...
+railway run npx ts-node src/rooms/rooms.seeder.ts
 
-echo.
-echo 🚀 Deploiement en cours...
+REM 8. Deploy
+echo 🚀 Deploying...
 railway up
 
-echo.
-echo 🌐 Generation du domaine...
-railway domain
-
-echo.
-echo ✅ Deploiement termine !
-echo.
-echo 📊 Commandes utiles:
-echo   - Voir les logs: railway logs
-echo   - Ouvrir dashboard: railway open
-echo   - Redeployer: railway up
-echo.
-echo 🔗 Copiez l'URL Railway dans votre frontend (.env.local)
-echo    NEXT_PUBLIC_API_URL=https://votre-app.up.railway.app/api
-echo.
+echo ✅ Deployment complete!
+echo 🌐 Your backend is now live on Railway
 pause
