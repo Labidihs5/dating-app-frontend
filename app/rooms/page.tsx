@@ -40,17 +40,18 @@ export default function RoomsPage() {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await response.json();
-      setRooms(data);
+      setRooms(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error loading rooms:', error);
+      setRooms([]);
     }
   };
 
-  const filteredRooms = rooms.filter(room => {
+  const filteredRooms = Array.isArray(rooms) ? rooms.filter(room => {
     const matchesCategory = selectedCategory === 'ALL' || room.category === selectedCategory;
     const matchesSearch = room.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
-  });
+  }) : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 pb-24">
